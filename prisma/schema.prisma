@@ -12,7 +12,7 @@ datasource db {
 }
 
 model Pokemon {
-  id Int @id @default
+  id Int @id @default(autoincrement())
   number Int @unique
   name String
   imageUrl String

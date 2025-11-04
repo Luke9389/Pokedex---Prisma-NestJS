@@ -59,12 +59,12 @@ model Pokemon {
 ## Implementation Plan
 
 ### Phase 1: Setup
-- [ ] Install NestJS CLI
-- [ ] Create new NestJS project
-- [ ] Install Prisma
-- [ ] Initialize Prisma with SQLite
-- [ ] Define Pokemon schema
-- [ ] Run initial migration
+- [x] Install NestJS CLI
+- [x] Create new NestJS project
+- [x] Install Prisma
+- [x] Initialize Prisma with SQLite
+- [x] Define Pokemon schema
+- [x] Run initial migration
 
 ### Phase 2: Prisma Service
 - [ ] Generate Prisma Client
