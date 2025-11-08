@@ -41,6 +41,13 @@ export class PokemonService {
     return await this.prisma.pokemon.update({
       where: { number },
       data: updatePokemonDto,
+      include: {
+        types: {
+          include: {
+            type: true
+          }
+        }
+      }
     });
   }
 
