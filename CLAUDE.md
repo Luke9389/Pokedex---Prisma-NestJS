@@ -2,7 +2,6 @@
 
 ## User Learning Preferences
 
-**DO NOT write or execute code directly.** Instead:
 - Provide clear, step-by-step instructions
 - Explain what each command/code does
 - Let the user execute commands and write code themselves

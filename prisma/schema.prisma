@@ -2,8 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
 }
 
 datasource db {
@@ -12,10 +12,28 @@ datasource db {
 }
 
 model Pokemon {
-  id Int @id @default(autoincrement())
-  number Int @unique
-  name String
-  imageUrl String
-  caught Boolean @default(false)
-  createdAt DateTime @default(now())
+  id        Int                   @id @default(autoincrement())
+  number    Int                   @unique
+  name      String
+  imageUrl  String
+  caught    Boolean               @default(false)
+  seen      Boolean               @default(false)
+  createdAt DateTime              @default(now())
+  types     PokemonTypeMapping[]
+}
+
+model Type {
+  id      Int                   @id @default(autoincrement())
+  name    String                @unique
+  pokemon PokemonTypeMapping[]
+}
+
+model PokemonTypeMapping {
+  id        Int     @id @default(autoincrement())
+  pokemon   Pokemon @relation(fields: [pokemonId], references: [id], onDelete: Cascade)
+  pokemonId Int
+  type      Type    @relation(fields: [typeId], references: [id], onDelete: Cascade)
+  typeId    Int
+
+  @@unique([pokemonId, typeId])
 }
