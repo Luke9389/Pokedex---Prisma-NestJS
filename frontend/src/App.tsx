@@ -25,6 +25,7 @@ function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState<'all' | 'seen' | 'unseen' | 'caught'>('all');
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [transitioning, setTransitioning] = useState<number | null>(null);
 
   useEffect(() => {
     fetchPokemon();
@@ -62,16 +63,23 @@ function App() {
     }
   };
 
-  const toggleSeen = (number: number, currentSeen: boolean) => {
-    updatePokemon(number, { seen: !currentSeen });
-  };
+  const cycleState = (number: number, currentSeen: boolean, currentCaught: boolean) => {
+    // Mark as transitioning
+    setTransitioning(number);
 
-  const toggleCaught = (number: number, currentCaught: boolean, currentSeen: boolean) => {
-    // When catching a Pokemon, mark it as seen too
-    updatePokemon(number, {
-      caught: !currentCaught,
-      seen: !currentCaught ? true : currentSeen  // If catching, mark as seen
-    });
+    if (!currentSeen && !currentCaught) {
+      // Unseen → Seen
+      updatePokemon(number, { seen: true, caught: false });
+    } else if (currentSeen && !currentCaught) {
+      // Seen → Caught
+      updatePokemon(number, { seen: true, caught: true });
+    } else if (currentCaught) {
+      // Caught → Unseen (full reset)
+      updatePokemon(number, { seen: false, caught: false });
+    }
+
+    // Clear transitioning state after animation completes
+    setTimeout(() => setTransitioning(null), 500);
   };
 
   const toggleType = (type: string) => {
@@ -84,6 +92,22 @@ function App() {
 
   const clearTypeFilter = () => {
     setSelectedTypes([]);
+  };
+
+  const resetAll = async () => {
+    if (!confirm('Are you sure you want to reset all Pokemon to unseen and uncaught? This cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:3000/pokemon/reset', {
+        method: 'POST',
+      });
+      const data = await response.json();
+      setPokemon(data);
+    } catch (error) {
+      console.error('Error resetting Pokemon:', error);
+    }
   };
 
   // Get unique types for dropdown
@@ -125,6 +149,9 @@ function App() {
           <span>Seen: {pokemon.filter(p => p.seen).length}/151</span>
           <span>Caught: {pokemon.filter(p => p.caught).length}/151</span>
         </div>
+        <button className="reset-btn" onClick={resetAll}>
+          Reset All
+        </button>
 
         <div className="search-controls">
           <input
@@ -193,7 +220,6 @@ function App() {
             key={p.number}
             className={`pokemon-card ${!p.seen ? 'unseen' : ''} ${p.caught ? 'caught' : ''}`}
           >
-            {p.caught && <div className="pokeball-badge"></div>}
             <div className="pokemon-number">#{p.number.toString().padStart(3, '0')}</div>
 
             <div className="pokemon-image-container">
@@ -215,19 +241,24 @@ function App() {
               </div>
             </div>
 
-            <div className="pokemon-actions">
-              <button
-                onClick={() => toggleSeen(p.number, p.seen)}
-                className={`btn btn-seen ${p.seen ? 'active' : ''}`}
-              >
-                {p.seen ? 'Seen' : 'Mark Seen'}
-              </button>
-              <button
-                onClick={() => toggleCaught(p.number, p.caught, p.seen)}
-                className={`btn btn-caught ${p.caught ? 'active' : ''}`}
-              >
-                {p.caught ? 'Caught' : 'Catch'}
-              </button>
+            <div
+              className="state-indicator"
+              onClick={() => cycleState(p.number, p.seen, p.caught)}
+              title={`Click to ${!p.seen ? 'mark as seen' : !p.caught ? 'catch' : 'reset to unseen'}`}
+            >
+              <div className="state-track">
+                <div className="state-line"></div>
+              </div>
+              <div className={`state-ball ${p.caught ? 'caught' : p.seen ? 'seen' : 'unseen'} ${transitioning === p.number ? 'transitioning' : ''}`}>
+                {!p.seen && !p.caught && <span className="question-mark">?</span>}
+                {p.seen && !p.caught && (
+                  <svg className="eye-icon" viewBox="0 0 24 24" width="16" height="16">
+                    <ellipse cx="12" cy="12" rx="9" ry="5" fill="none" stroke="#333" strokeWidth="2"/>
+                    <circle cx="12" cy="12" r="3.5" fill="#333"/>
+                  </svg>
+                )}
+                {p.caught && <div className="pokeball-icon"></div>}
+              </div>
             </div>
           </div>
         ))}

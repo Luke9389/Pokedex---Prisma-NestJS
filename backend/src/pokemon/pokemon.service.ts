@@ -77,4 +77,17 @@ export class PokemonService {
     // Save to database using our existing create method
     return await this.create(pokemonData);
   }
+
+  async resetAll() {
+    // Reset all Pokemon to unseen and uncaught
+    await this.prisma.pokemon.updateMany({
+      data: {
+        seen: false,
+        caught: false,
+      },
+    });
+
+    // Return updated Pokemon list
+    return await this.findAll();
+  }
 }

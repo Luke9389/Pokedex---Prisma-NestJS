@@ -12,6 +12,11 @@ export class PokemonController {
     return this.pokemonService.create(createPokemonDto);
   }
 
+  @Post('reset')
+  resetAll() {
+    return this.pokemonService.resetAll();
+  }
+
   @Get()
   findAll() {
     return this.pokemonService.findAll();
